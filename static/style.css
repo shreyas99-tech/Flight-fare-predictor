@@ -511,6 +511,24 @@ body {
   text-transform: uppercase;
 }
 
+.header-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.route-tier-badge {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #d1fae5;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
 /* Route Display */
 .route-display {
   display: grid;

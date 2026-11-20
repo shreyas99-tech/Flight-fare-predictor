@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SkyFare AI | Flight Ticket Fare Predictor</title>
+  <title>SkyFare AI | Scalable Flight Ticket Fare Predictor</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,32 +15,32 @@
     <header class="app-header">
       <div class="badge-pill">
         <span class="pulse-radar"></span>
-        <span>Aviation AI Fare Intelligence</span>
+        <span>Aviation AI • Tier 1, 2 & 3 Nationwide Network (30 Cities)</span>
       </div>
       <h1 class="main-title">
         SkyFare <span class="gradient-text">Predictor</span> ✈️
       </h1>
       <p class="subtitle">
-        Predict Indian domestic flight ticket fares instantly using a trained
-        <strong>HistGradientBoostingRegressor</strong> Machine Learning model.
+        Predict domestic airline ticket fares across 30 Tier 1, 2, and 3 Indian airports powered by
+        <strong>HistGradientBoostingRegressor</strong> Machine Learning.
       </p>
     </header>
 
     <!-- Quick Demo Presets -->
     <section class="presets-section">
-      <span class="presets-title">⚡ Quick Flight Scenarios:</span>
+      <span class="presets-title">⚡ Quick Multi-Tier Route Scenarios:</span>
       <div class="presets-row">
         <button type="button" class="btn-preset" data-preset="del_bom_business">
-          💎 DEL ➔ BOM • Vistara Business
+          💎 DEL ➔ BOM • Vistara Business (Tier 1 ➔ 1)
         </button>
-        <button type="button" class="btn-preset" data-preset="blr_del_lastminute">
-          🚨 BLR ➔ DEL • Last-Minute Rush
+        <button type="button" class="btn-preset" data-preset="bom_goa_weekend">
+          🌴 BOM ➔ GOA • Weekend Beach Saver (Tier 1 ➔ 2)
         </button>
-        <button type="button" class="btn-preset" data-preset="bom_maa_saver">
-          🌿 BOM ➔ MAA • 30-Day Advance Saver
+        <button type="button" class="btn-preset" data-preset="del_ded_regional">
+          🏔️ DEL ➔ DED • Dehradun Hills (Tier 1 ➔ 3)
         </button>
-        <button type="button" class="btn-preset" data-preset="hyd_ccu_direct">
-          ✈️ HYD ➔ CCU • Morning Direct
+        <button type="button" class="btn-preset" data-preset="vns_cok_cross">
+          🛕 VNS ➔ COK • Varanasi to Kochi (Tier 3 ➔ 2)
         </button>
       </div>
     </section>
@@ -52,21 +52,33 @@
         <div class="card-header">
           <div class="card-icon">🛫</div>
           <div>
-            <h2 class="card-title">Flight Route & Details</h2>
-            <p class="card-subtitle">Select your itinerary options to compute fair market ticket price</p>
+            <h2 class="card-title">Flight Itinerary & Route</h2>
+            <p class="card-subtitle">Select origin, destination, travel factors, and ticket options</p>
           </div>
         </div>
 
         <form id="fare-form" novalidate>
-          <!-- Route Section: Source, Swap, Destination -->
+          <!-- Route Section: Source, Swap, Destination across 30 Cities -->
           <div class="route-selector-box">
             <div class="city-input-block">
               <label for="source_city">From (Origin)</label>
               <div class="select-wrapper">
                 <select id="source_city" name="source_city" required>
-                  {% for c in cities %}
-                    <option value="{{ c }}" {% if c == 'Delhi' %}selected{% endif %}>{{ c }}</option>
-                  {% endfor %}
+                  <optgroup label="Tier 1 Metros">
+                    {% for c in tier1_cities %}
+                      <option value="{{ c }}" {% if c == 'Delhi' %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                  </optgroup>
+                  <optgroup label="Tier 2 Commercial Hubs">
+                    {% for c in tier2_cities %}
+                      <option value="{{ c }}">{{ c }}</option>
+                    {% endfor %}
+                  </optgroup>
+                  <optgroup label="Tier 3 Regional & Tourist Centers">
+                    {% for c in tier3_cities %}
+                      <option value="{{ c }}">{{ c }}</option>
+                    {% endfor %}
+                  </optgroup>
                 </select>
               </div>
             </div>
@@ -79,9 +91,21 @@
               <label for="destination_city">To (Destination)</label>
               <div class="select-wrapper">
                 <select id="destination_city" name="destination_city" required>
-                  {% for c in cities %}
-                    <option value="{{ c }}" {% if c == 'Mumbai' %}selected{% endif %}>{{ c }}</option>
-                  {% endfor %}
+                  <optgroup label="Tier 1 Metros">
+                    {% for c in tier1_cities %}
+                      <option value="{{ c }}" {% if c == 'Mumbai' %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                  </optgroup>
+                  <optgroup label="Tier 2 Commercial Hubs">
+                    {% for c in tier2_cities %}
+                      <option value="{{ c }}">{{ c }}</option>
+                    {% endfor %}
+                  </optgroup>
+                  <optgroup label="Tier 3 Regional & Tourist Centers">
+                    {% for c in tier3_cities %}
+                      <option value="{{ c }}">{{ c }}</option>
+                    {% endfor %}
+                  </optgroup>
                 </select>
               </div>
             </div>
@@ -94,7 +118,7 @@
 
           <!-- Flight Attributes Grid -->
           <div class="form-section">
-            <h3 class="section-title">✈️ Carrier & Schedule</h3>
+            <h3 class="section-title">✈️ Airline, Class & Schedule</h3>
             <div class="fields-grid">
               <div class="field-item">
                 <label for="airline">Airline</label>
@@ -142,9 +166,51 @@
             </div>
           </div>
 
+          <!-- Additional Real-World Factors: Day Type, Season, Booking Flexibility -->
+          <div class="form-section">
+            <h3 class="section-title">🗓️ Travel Timing & Booking Factors</h3>
+            <div class="fields-grid">
+              <div class="field-item">
+                <label for="day_type">Day of Travel</label>
+                <div class="select-wrapper">
+                  <select id="day_type" name="day_type" required>
+                    {% for dt in day_types %}
+                      <option value="{{ dt }}" {% if dt == 'Weekday (Mon-Thu)' %}selected{% endif %}>{{ dt }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <small class="helper-text">Weekends carry leisure surge</small>
+              </div>
+
+              <div class="field-item">
+                <label for="season">Seasonality</label>
+                <div class="select-wrapper">
+                  <select id="season" name="season" required>
+                    {% for sn in seasons %}
+                      <option value="{{ sn }}" {% if sn == 'Regular' %}selected{% endif %}>{{ sn }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <small class="helper-text">Festive/Vacation surge vs Monsoon</small>
+              </div>
+
+              <div class="field-item">
+                <label for="booking_type">Ticket Flexibility</label>
+                <div class="select-wrapper">
+                  <select id="booking_type" name="booking_type" required>
+                    {% for bt in booking_types %}
+                      <option value="{{ bt }}" {% if bt == 'Non-Refundable (Standard)' %}selected{% endif %}>{{ bt }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <small class="helper-text">Free cancellation flexibility tier</small>
+              </div>
+            </div>
+          </div>
+
           <!-- Numerical Parameters: Duration & Days Left -->
           <div class="form-section">
-            <h3 class="section-title">⏱️ Timing & Advance Window</h3>
+            <h3 class="section-title">⏱️ Flight Hours & Advance Window</h3>
             <div class="fields-grid">
               <div class="field-item">
                 <label for="duration_hours">
@@ -156,14 +222,14 @@
                     id="duration_hours"
                     name="duration_hours"
                     min="0.8"
-                    max="24.0"
+                    max="30.0"
                     step="0.1"
                     value="2.2"
                     required
                   />
                   <span class="input-suffix">hrs</span>
                 </div>
-                <small class="helper-text">Non-stop: ~1.5 - 3h | Layovers: 4 - 12h</small>
+                <small class="helper-text">Auto-calculated based on route distance</small>
               </div>
 
               <div class="field-item">
@@ -183,7 +249,7 @@
                   />
                   <span class="input-suffix">days</span>
                 </div>
-                <small class="helper-text">1-3 days triggers surge dynamic pricing</small>
+                <small class="helper-text">1-3 days triggers emergency dynamic pricing</small>
               </div>
             </div>
           </div>
@@ -210,8 +276,8 @@
           <div class="placeholder-icon">🎫</div>
           <h3 class="placeholder-title">Awaiting Flight Parameters</h3>
           <p class="placeholder-desc">
-            Choose your origin, destination, and travel options, or select a demo preset above,
-            then click <strong>"Estimate Flight Fare"</strong> to get the AI valuation.
+            Choose your origin and destination across 30 Tier 1/2/3 cities, or click a quick scenario
+            above, then press <strong>"Estimate Flight Fare"</strong>.
           </p>
         </div>
 
@@ -223,7 +289,10 @@
               <span class="brand-icon">✈️</span>
               <span class="airline-name" id="res-airline">IndiGo</span>
             </div>
-            <div class="class-badge" id="res-class">Economy</div>
+            <div class="header-badges">
+              <span class="route-tier-badge" id="res-route-tier">Tier 1 ➔ Tier 1</span>
+              <span class="class-badge" id="res-class">Economy</span>
+            </div>
           </div>
 
           <!-- Flight Route Banner -->
@@ -262,8 +331,8 @@
           <!-- Key Metrics Grid -->
           <div class="pass-metrics">
             <div class="pass-metric-item">
-              <span class="m-label">Departure</span>
-              <span class="m-val" id="res-time">Morning</span>
+              <span class="m-label">Route Distance</span>
+              <span class="m-val" id="res-distance">1,148 km</span>
             </div>
             <div class="pass-metric-item">
               <span class="m-label">Days Left</span>
@@ -272,6 +341,14 @@
             <div class="pass-metric-item">
               <span class="m-label">Hourly Cost</span>
               <span class="m-val" id="res-hourly">₹0/hr</span>
+            </div>
+            <div class="pass-metric-item">
+              <span class="m-label">Per Km Rate</span>
+              <span class="m-val" id="res-perkm">₹0/km</span>
+            </div>
+            <div class="pass-metric-item">
+              <span class="m-label">Travel Day</span>
+              <span class="m-val" id="res-daytype">Weekday</span>
             </div>
             <div class="pass-metric-item">
               <span class="m-label">Demand Level</span>
@@ -299,41 +376,41 @@
 
     <!-- Beginner Explanation Section -->
     <section class="how-it-works-section">
-      <h2 class="how-title">🧠 How Machine Learning Understands Airline Pricing</h2>
+      <h2 class="how-title">🧠 Scalable Nationwide Airline Intelligence</h2>
       <div class="cards-grid">
         <div class="info-card">
           <div class="card-step">01</div>
-          <h3 class="info-card-title">Real Airline Yield Management</h3>
+          <h3 class="info-card-title">30 Cities & Tier Dynamics</h3>
           <p class="info-card-text">
-            Airlines change prices based on seat scarcity and booking urgency. Our dataset (<code>flights.csv</code>)
-            mimics 2,400 domestic Indian flights across busy routes like Delhi, Mumbai, and Bangalore.
+            Covers Tier 1 metros, Tier 2 commercial hubs, and Tier 3 tourist/regional gateways.
+            The model understands that low-frequency regional routes carry different pricing dynamics than busy metro corridors.
           </p>
         </div>
 
         <div class="info-card">
           <div class="card-step">02</div>
-          <h3 class="info-card-title">Dense One-Hot Encoding</h3>
+          <h3 class="info-card-title">Multi-Factor Realism</h3>
           <p class="info-card-text">
-            <code>OneHotEncoder(sparse_output=False)</code> converts text categories (airline, route, time of day)
-            into dense binary arrays so the gradient boosting algorithm can process them at lightning speed.
+            Factors in spatial distance (km), weekend travel surges, festive/monsoon seasonality,
+            and flexible ticket options alongside advance booking days and duration.
           </p>
         </div>
 
         <div class="info-card">
           <div class="card-step">03</div>
-          <h3 class="info-card-title">HistGradientBoosting Trees</h3>
+          <h3 class="info-card-title">HistGradientBoosting Regressor</h3>
           <p class="info-card-text">
-            <code>HistGradientBoostingRegressor</code> is scikit-learn's modern boosting algorithm. It groups
-            values into numerical bins and trains consecutive trees that iteratively correct past errors.
+            Trained on 12,000 flight records using <code>HistGradientBoostingRegressor</code> with
+            <code>OneHotEncoder(sparse_output=False)</code>, providing fast, non-linear regression with over 96% accuracy.
           </p>
         </div>
 
         <div class="info-card">
           <div class="card-step">04</div>
-          <h3 class="info-card-title">Instant Real-Time Valuation</h3>
+          <h3 class="info-card-title">Instant Live Valuation</h3>
           <p class="info-card-text">
-            The trained pipeline is frozen into <code>flight_model.pkl</code>. Flask serves the model, and
-            asynchronous JavaScript displays the price without reloading the page.
+            Runs seamlessly on Flask (Port 5001) with responsive JavaScript and animated INR currency counters,
+            allowing side-by-side execution with other applications.
           </p>
         </div>
       </div>

@@ -132,15 +132,15 @@ python app.py
 You will see:
 ```text
 Flight Fare model pipeline loaded successfully into Flask.
-Starting Flight Fare Predictor at http://127.0.0.1:5000 ...
+Starting Flight Fare Predictor at http://127.0.0.1:5001 ...
  * Serving Flask app 'app'
- * Running on http://127.0.0.1:5000
+ * Running on http://127.0.0.1:5001
 ```
 
 ### Step 6: Open the App in Your Browser
 Open your browser and navigate to:
 ```text
-http://127.0.0.1:5000
+http://127.0.0.1:5001
 ```
 
 * Try the **Quick Flight Scenarios** (e.g. *DEL ➔ BOM Vistara Business*, *BLR ➔ DEL Last-Minute Rush*, etc.) to see the boarding pass update instantly.

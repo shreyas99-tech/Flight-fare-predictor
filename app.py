@@ -269,5 +269,6 @@ if __name__ == "__main__":
     except Exception as err:
         print(f"Warning: {err}")
 
-    print("Starting Flight Fare Predictor at http://127.0.0.1:5000 ...")
-    app.run(host="127.0.0.1", port=5000, debug=False)
+    port = int(os.environ.get("PORT", 5001))
+    print(f"Starting Flight Fare Predictor at http://127.0.0.1:{port} ...")
+    app.run(host="127.0.0.1", port=port, debug=False)

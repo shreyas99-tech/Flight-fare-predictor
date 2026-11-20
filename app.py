@@ -17,11 +17,16 @@ import joblib
 import pandas as pd
 from flask import Flask, render_template, request, jsonify
 
-app = Flask(__name__)
-
-# Paths
+# Absolute paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_FILE_PATH = os.path.join(BASE_DIR, "flight_model.pkl")
+
+app = Flask(
+    __name__,
+    root_path=BASE_DIR,
+    template_folder=os.path.join(BASE_DIR, "templates"),
+    static_folder=os.path.join(BASE_DIR, "static"),
+)
 
 # Cached model pipeline
 model_pipeline = None

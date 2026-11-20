@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkyFare AI | Flight Ticket Fare Predictor</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="badge-pill">
+        <span class="pulse-radar"></span>
+        <span>Aviation AI Fare Intelligence</span>
+      </div>
+      <h1 class="main-title">
+        SkyFare <span class="gradient-text">Predictor</span> ✈️
+      </h1>
+      <p class="subtitle">
+        Predict Indian domestic flight ticket fares instantly using a trained
+        <strong>HistGradientBoostingRegressor</strong> Machine Learning model.
+      </p>
+    </header>
+
+    <!-- Quick Demo Presets -->
+    <section class="presets-section">
+      <span class="presets-title">⚡ Quick Flight Scenarios:</span>
+      <div class="presets-row">
+        <button type="button" class="btn-preset" data-preset="del_bom_business">
+          💎 DEL ➔ BOM • Vistara Business
+        </button>
+        <button type="button" class="btn-preset" data-preset="blr_del_lastminute">
+          🚨 BLR ➔ DEL • Last-Minute Rush
+        </button>
+        <button type="button" class="btn-preset" data-preset="bom_maa_saver">
+          🌿 BOM ➔ MAA • 30-Day Advance Saver
+        </button>
+        <button type="button" class="btn-preset" data-preset="hyd_ccu_direct">
+          ✈️ HYD ➔ CCU • Morning Direct
+        </button>
+      </div>
+    </section>
+
+    <!-- Main Booking & Fare Grid -->
+    <main class="flight-grid">
+      <!-- Search & Form Card -->
+      <section class="card form-card">
+        <div class="card-header">
+          <div class="card-icon">🛫</div>
+          <div>
+            <h2 class="card-title">Flight Route & Details</h2>
+            <p class="card-subtitle">Select your itinerary options to compute fair market ticket price</p>
+          </div>
+        </div>
+
+        <form id="fare-form" novalidate>
+          <!-- Route Section: Source, Swap, Destination -->
+          <div class="route-selector-box">
+            <div class="city-input-block">
+              <label for="source_city">From (Origin)</label>
+              <div class="select-wrapper">
+                <select id="source_city" name="source_city" required>
+                  {% for c in cities %}
+                    <option value="{{ c }}" {% if c == 'Delhi' %}selected{% endif %}>{{ c }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <button type="button" id="btn-swap-cities" class="btn-swap" title="Swap Cities" aria-label="Swap Cities">
+              ⇄
+            </button>
+
+            <div class="city-input-block">
+              <label for="destination_city">To (Destination)</label>
+              <div class="select-wrapper">
+                <select id="destination_city" name="destination_city" required>
+                  {% for c in cities %}
+                    <option value="{{ c }}" {% if c == 'Mumbai' %}selected{% endif %}>{{ c }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- City Error Notice (dynamically revealed if source == destination) -->
+          <div class="inline-alert" id="city-match-alert" style="display: none;">
+            ⚠️ Origin and destination cannot be identical! Please select different cities.
+          </div>
+
+          <!-- Flight Attributes Grid -->
+          <div class="form-section">
+            <h3 class="section-title">✈️ Carrier & Schedule</h3>
+            <div class="fields-grid">
+              <div class="field-item">
+                <label for="airline">Airline</label>
+                <div class="select-wrapper">
+                  <select id="airline" name="airline" required>
+                    {% for a in airlines %}
+                      <option value="{{ a }}" {% if a == 'IndiGo' %}selected{% endif %}>{{ a }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-item">
+                <label for="departure_time">Departure Slot</label>
+                <div class="select-wrapper">
+                  <select id="departure_time" name="departure_time" required>
+                    {% for s in departure_slots %}
+                      <option value="{{ s }}" {% if s == 'Morning' %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-item">
+                <label for="cabin_class">Cabin Class</label>
+                <div class="select-wrapper">
+                  <select id="cabin_class" name="cabin_class" required>
+                    {% for cl in cabin_classes %}
+                      <option value="{{ cl }}" {% if cl == 'Economy' %}selected{% endif %}>{{ cl }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-item">
+                <label for="stops">Stops</label>
+                <div class="select-wrapper">
+                  <select id="stops" name="stops" required>
+                    <option value="0" selected>Non-Stop (Direct)</option>
+                    <option value="1">1 Stop</option>
+                    <option value="2">2 Stops</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Numerical Parameters: Duration & Days Left -->
+          <div class="form-section">
+            <h3 class="section-title">⏱️ Timing & Advance Window</h3>
+            <div class="fields-grid">
+              <div class="field-item">
+                <label for="duration_hours">
+                  Flight Duration <span class="unit">(Hours)</span>
+                </label>
+                <div class="input-wrapper">
+                  <input
+                    type="number"
+                    id="duration_hours"
+                    name="duration_hours"
+                    min="0.8"
+                    max="24.0"
+                    step="0.1"
+                    value="2.2"
+                    required
+                  />
+                  <span class="input-suffix">hrs</span>
+                </div>
+                <small class="helper-text">Non-stop: ~1.5 - 3h | Layovers: 4 - 12h</small>
+              </div>
+
+              <div class="field-item">
+                <label for="days_left">
+                  Days Left Until Flight
+                </label>
+                <div class="input-wrapper">
+                  <input
+                    type="number"
+                    id="days_left"
+                    name="days_left"
+                    min="1"
+                    max="100"
+                    step="1"
+                    value="15"
+                    required
+                  />
+                  <span class="input-suffix">days</span>
+                </div>
+                <small class="helper-text">1-3 days triggers surge dynamic pricing</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <button type="submit" id="btn-submit" class="btn btn-primary">
+              <span class="btn-text">Estimate Flight Fare</span>
+              <span class="btn-icon">⚡</span>
+              <span class="btn-spinner" aria-hidden="true"></span>
+            </button>
+            <button type="button" id="btn-reset" class="btn btn-secondary">
+              <span>Reset</span>
+              <span>↺</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Boarding Pass & Fare Result Card -->
+      <section class="card result-card" id="result-card">
+        <!-- Placeholder View -->
+        <div class="result-placeholder" id="result-placeholder">
+          <div class="placeholder-icon">🎫</div>
+          <h3 class="placeholder-title">Awaiting Flight Parameters</h3>
+          <p class="placeholder-desc">
+            Choose your origin, destination, and travel options, or select a demo preset above,
+            then click <strong>"Estimate Flight Fare"</strong> to get the AI valuation.
+          </p>
+        </div>
+
+        <!-- Live Boarding Pass Result View -->
+        <div class="boarding-pass" id="boarding-pass" style="display: none;">
+          <!-- Ticket Header -->
+          <div class="pass-header">
+            <div class="airline-brand">
+              <span class="brand-icon">✈️</span>
+              <span class="airline-name" id="res-airline">IndiGo</span>
+            </div>
+            <div class="class-badge" id="res-class">Economy</div>
+          </div>
+
+          <!-- Flight Route Banner -->
+          <div class="route-display">
+            <div class="route-node">
+              <span class="city-name" id="res-origin">Delhi</span>
+              <span class="node-label">ORIGIN</span>
+            </div>
+            <div class="flight-path">
+              <span class="stops-tag" id="res-stops">Non-Stop</span>
+              <div class="path-line">
+                <span class="plane-marker">✈</span>
+              </div>
+              <span class="duration-tag" id="res-duration">2.2 hrs</span>
+            </div>
+            <div class="route-node text-right">
+              <span class="city-name" id="res-destination">Mumbai</span>
+              <span class="node-label">DESTINATION</span>
+            </div>
+          </div>
+
+          <!-- Perforated Divider -->
+          <div class="pass-divider">
+            <div class="notch left-notch"></div>
+            <div class="dashed-line"></div>
+            <div class="notch right-notch"></div>
+          </div>
+
+          <!-- Fare Display Area -->
+          <div class="fare-section">
+            <span class="fare-label">ESTIMATED TICKET FARE (INR)</span>
+            <div class="fare-price" id="res-fare">₹0</div>
+            <div class="fare-range" id="res-range">Market Band: ₹0 - ₹0</div>
+          </div>
+
+          <!-- Key Metrics Grid -->
+          <div class="pass-metrics">
+            <div class="pass-metric-item">
+              <span class="m-label">Departure</span>
+              <span class="m-val" id="res-time">Morning</span>
+            </div>
+            <div class="pass-metric-item">
+              <span class="m-label">Days Left</span>
+              <span class="m-val" id="res-days">15 Days</span>
+            </div>
+            <div class="pass-metric-item">
+              <span class="m-label">Hourly Cost</span>
+              <span class="m-val" id="res-hourly">₹0/hr</span>
+            </div>
+            <div class="pass-metric-item">
+              <span class="m-label">Demand Level</span>
+              <span class="m-val badge-demand" id="res-demand">Normal</span>
+            </div>
+          </div>
+
+          <!-- Smart Advice Box -->
+          <div class="advice-box" id="advice-box">
+            <div class="advice-icon">💡</div>
+            <p id="res-advice">Early bird discount active. Optimal time to book.</p>
+          </div>
+        </div>
+
+        <!-- Error Notification Banner -->
+        <div class="error-banner" id="error-banner" style="display: none;">
+          <div class="error-icon">⚠️</div>
+          <div>
+            <h4 class="error-title">Submission Error</h4>
+            <p class="error-msg" id="error-msg">Something went wrong.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Beginner Explanation Section -->
+    <section class="how-it-works-section">
+      <h2 class="how-title">🧠 How Machine Learning Understands Airline Pricing</h2>
+      <div class="cards-grid">
+        <div class="info-card">
+          <div class="card-step">01</div>
+          <h3 class="info-card-title">Real Airline Yield Management</h3>
+          <p class="info-card-text">
+            Airlines change prices based on seat scarcity and booking urgency. Our dataset (<code>flights.csv</code>)
+            mimics 2,400 domestic Indian flights across busy routes like Delhi, Mumbai, and Bangalore.
+          </p>
+        </div>
+
+        <div class="info-card">
+          <div class="card-step">02</div>
+          <h3 class="info-card-title">Dense One-Hot Encoding</h3>
+          <p class="info-card-text">
+            <code>OneHotEncoder(sparse_output=False)</code> converts text categories (airline, route, time of day)
+            into dense binary arrays so the gradient boosting algorithm can process them at lightning speed.
+          </p>
+        </div>
+
+        <div class="info-card">
+          <div class="card-step">03</div>
+          <h3 class="info-card-title">HistGradientBoosting Trees</h3>
+          <p class="info-card-text">
+            <code>HistGradientBoostingRegressor</code> is scikit-learn's modern boosting algorithm. It groups
+            values into numerical bins and trains consecutive trees that iteratively correct past errors.
+          </p>
+        </div>
+
+        <div class="info-card">
+          <div class="card-step">04</div>
+          <h3 class="info-card-title">Instant Real-Time Valuation</h3>
+          <p class="info-card-text">
+            The trained pipeline is frozen into <code>flight_model.pkl</code>. Flask serves the model, and
+            asynchronous JavaScript displays the price without reloading the page.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Built strictly with Python, pandas, scikit-learn, joblib, Flask, HTML, CSS, and JavaScript.</p>
+    </footer>
+  </div>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
